@@ -3,6 +3,7 @@ package com.example.imagefuzzy;
 import java.io.FileNotFoundException;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
@@ -13,176 +14,172 @@ import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class ImgeditActivity extends Activity {
 
-	/** Called when the activity is first created. */
-	private Bitmap srcBitmap, dstBitmap;
-	private String pathName = "/sdcard/testimg.jpg";
+    /** Called when the activity is first created. */
+    private Bitmap          srcBitmap, dstBitmap;
+    private String          pathName          = "/sdcard/testimg.jpg";
 
-	private ImageView dstimage = null;
-	private SeekBar SaturationseekBar = null;
-	private SeekBar BrightnessseekBar = null;
-	private SeekBar ContrastseekBar = null;
-	private int imgHeight, imgWidth;
+    private ImageView       dstimage          = null;
+    private SeekBar         SaturationseekBar = null;
+    private SeekBar         BrightnessseekBar = null;
+    private SeekBar         ContrastseekBar   = null;
+    private int             imgHeight, imgWidth;
 
-	public static final int PICTURE = 0;
-	public static final int MAX_WIDTH = 240;
-	public static final int MAX_HEIGHT = 240;
-	private Uri imageUri;
+    public static final int PICTURE           = 0;
+    public static final int MAX_WIDTH         = 240;
+    public static final int MAX_HEIGHT        = 240;
+    private Uri             imageUri;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
 
-		dstimage = (ImageView) findViewById(R.id.dstImageView);
-		SaturationseekBar = (SeekBar) findViewById(R.id.Saturationseekbar);
-		BrightnessseekBar = (SeekBar) findViewById(R.id.Brightnessseekbar);
-		ContrastseekBar = (SeekBar) findViewById(R.id.Contrastseekbar);
+        dstimage = (ImageView) findViewById(R.id.dstImageView);
+        SaturationseekBar = (SeekBar) findViewById(R.id.Saturationseekbar);
+        BrightnessseekBar = (SeekBar) findViewById(R.id.Brightnessseekbar);
+        ContrastseekBar = (SeekBar) findViewById(R.id.Contrastseekbar);
 
-		// srcBitmap = BitmapFactory.decodeFile(pathName);
-		srcBitmap = BitmapFactory.decodeResource(getResources(),
-				R.drawable.ic_welcome_photo_11);
-		dstimage.setImageBitmap(srcBitmap);
-		imgHeight = srcBitmap.getHeight();
-		imgWidth = srcBitmap.getWidth();
+        // srcBitmap = BitmapFactory.decodeFile(pathName);
+        srcBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_welcome_photo_11);
+        dstimage.setImageBitmap(srcBitmap);
+        imgHeight = srcBitmap.getHeight();
+        imgWidth = srcBitmap.getWidth();
 
-		dstBitmap = Bitmap.createBitmap(imgWidth, imgHeight, Config.ARGB_8888);
+        dstBitmap = Bitmap.createBitmap(imgWidth, imgHeight, Config.ARGB_8888);
 
-		SaturationseekBar
-				.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-					// 当拖动条的滑块位置发生改变时触发该方法
-					public void onProgressChanged(SeekBar arg0, int progress,
-							boolean fromUser) {
-						// 创建一个相同尺寸的可变的位图区,用于绘制调色后的图片
-						Bitmap bmp = Bitmap.createBitmap(imgWidth, imgHeight,
-								Config.ARGB_8888);
-						ColorMatrix cMatrix = new ColorMatrix();
-						// 设置饱和度
-						cMatrix.setSaturation((float) (progress / 100.0));
+        SaturationseekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            // 当拖动条的滑块位置发生改变时触发该方法
+            public void onProgressChanged(SeekBar arg0, int progress, boolean fromUser) {
+                // 创建一个相同尺寸的可变的位图区,用于绘制调色后的图片
+                Bitmap bmp = Bitmap.createBitmap(imgWidth, imgHeight, Config.ARGB_8888);
+                ColorMatrix cMatrix = new ColorMatrix();
+                // 设置饱和度
+                cMatrix.setSaturation((float) (progress / 100.0));
 
-						Paint paint = new Paint();
-						paint.setColorFilter(new ColorMatrixColorFilter(cMatrix));
+                Paint paint = new Paint();
+                paint.setColorFilter(new ColorMatrixColorFilter(cMatrix));
 
-						Canvas canvas = new Canvas(bmp);
-						// 在Canvas上绘制一个已经存在的Bitmap。这样，dstBitmap就和srcBitmap一摸一样了
-						canvas.drawBitmap(srcBitmap, 0, 0, paint);
+                Canvas canvas = new Canvas(bmp);
+                // 在Canvas上绘制一个已经存在的Bitmap。这样，dstBitmap就和srcBitmap一摸一样了
+                canvas.drawBitmap(srcBitmap, 0, 0, paint);
 
-						dstimage.setImageBitmap(bmp);
+                dstimage.setImageBitmap(bmp);
 
-					}
+            }
 
-					public void onStartTrackingTouch(SeekBar bar) {
-					}
+            public void onStartTrackingTouch(SeekBar bar) {
+            }
 
-					public void onStopTrackingTouch(SeekBar bar) {
-					}
-				});
+            public void onStopTrackingTouch(SeekBar bar) {
+            }
+        });
 
-		BrightnessseekBar
-				.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-					// 当拖动条的滑块位置发生改变时触发该方法
-					public void onProgressChanged(SeekBar arg0, int progress,
-							boolean fromUser) {
-						Bitmap bmp = Bitmap.createBitmap(imgWidth, imgHeight,
-								Config.ARGB_8888);
-						int brightness = progress - 127;
-						ColorMatrix cMatrix = new ColorMatrix();
-						cMatrix.set(new float[] { 1, 0, 0, 0, brightness, 0, 1,
-								0, 0, brightness,// 改变亮度
-								0, 0, 1, 0, brightness, 0, 0, 0, 1, 0 });
+        BrightnessseekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            // 当拖动条的滑块位置发生改变时触发该方法
+            public void onProgressChanged(SeekBar arg0, int progress, boolean fromUser) {
+                Bitmap bmp = Bitmap.createBitmap(imgWidth, imgHeight, Config.ARGB_8888);
+                int brightness = progress - 127;
+                ColorMatrix cMatrix = new ColorMatrix();
+                cMatrix.set(new float[] { 1, 0, 0, 0, brightness, 0, 1, 0, 0, brightness,// 改变亮度
+                        0, 0, 1, 0, brightness, 0, 0, 0, 1, 0 });
 
-						Paint paint = new Paint();
-						paint.setColorFilter(new ColorMatrixColorFilter(cMatrix));
+                Paint paint = new Paint();
+                paint.setColorFilter(new ColorMatrixColorFilter(cMatrix));
 
-						Canvas canvas = new Canvas(bmp);
-						// 在Canvas上绘制一个已经存在的Bitmap。这样，dstBitmap就和srcBitmap一摸一样了
-						canvas.drawBitmap(srcBitmap, 0, 0, paint);
-						dstimage.setImageBitmap(bmp);
+                Canvas canvas = new Canvas(bmp);
+                // 在Canvas上绘制一个已经存在的Bitmap。这样，dstBitmap就和srcBitmap一摸一样了
+                canvas.drawBitmap(srcBitmap, 0, 0, paint);
+                dstimage.setImageBitmap(bmp);
 
-					}
+            }
 
-					public void onStartTrackingTouch(SeekBar bar) {
-					}
+            public void onStartTrackingTouch(SeekBar bar) {
+            }
 
-					public void onStopTrackingTouch(SeekBar bar) {
-					}
-				});
+            public void onStopTrackingTouch(SeekBar bar) {
+            }
+        });
 
-		ContrastseekBar
-				.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-					// 当拖动条的滑块位置发生改变时触发该方法
-					public void onProgressChanged(SeekBar arg0, int progress,
-							boolean fromUser) {
-						Bitmap bmp = Bitmap.createBitmap(imgWidth, imgHeight,
-								Config.ARGB_8888);
-						// int brightness = progress - 127;
-						float contrast = (float) ((progress + 64) / 128.0);
-						ColorMatrix cMatrix = new ColorMatrix();
-						cMatrix.set(new float[] { contrast, 0, 0, 0, 0, 0,
-								contrast, 0, 0, 0,// 改变对比度
-								0, 0, contrast, 0, 0, 0, 0, 0, 1, 0 });
+        ContrastseekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            // 当拖动条的滑块位置发生改变时触发该方法
+            public void onProgressChanged(SeekBar arg0, int progress, boolean fromUser) {
+                Bitmap bmp = Bitmap.createBitmap(imgWidth, imgHeight, Config.ARGB_8888);
+                // int brightness = progress - 127;
+                float contrast = (float) ((progress + 64) / 128.0);
+                ColorMatrix cMatrix = new ColorMatrix();
+                cMatrix.set(new float[] { contrast, 0, 0, 0, 0, 0, contrast, 0, 0, 0,// 改变对比度
+                        0, 0, contrast, 0, 0, 0, 0, 0, 1, 0 });
 
-						Paint paint = new Paint();
-						paint.setColorFilter(new ColorMatrixColorFilter(cMatrix));
+                Paint paint = new Paint();
+                paint.setColorFilter(new ColorMatrixColorFilter(cMatrix));
 
-						Canvas canvas = new Canvas(bmp);
-						// 在Canvas上绘制一个已经存在的Bitmap。这样，dstBitmap就和srcBitmap一摸一样了
-						canvas.drawBitmap(srcBitmap, 0, 0, paint);
+                Canvas canvas = new Canvas(bmp);
+                // 在Canvas上绘制一个已经存在的Bitmap。这样，dstBitmap就和srcBitmap一摸一样了
+                canvas.drawBitmap(srcBitmap, 0, 0, paint);
 
-						dstimage.setImageBitmap(bmp);
-					}
+                dstimage.setImageBitmap(bmp);
+            }
 
-					public void onStartTrackingTouch(SeekBar arg0) {
-						// TODO Auto-generated method stub
+            public void onStartTrackingTouch(SeekBar arg0) {
+                // TODO Auto-generated method stub
 
-					}
+            }
 
-					public void onStopTrackingTouch(SeekBar seekBar) {
-						// TODO Auto-generated method stub
-					}
-				});
-	}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+        });
+        findViewById(R.id.btn_dddd).setOnClickListener(new OnClickListener() {
 
-	/**
-	 * 需要加载的图片可能是大图，我们需要对其进行合适的缩小处理
-	 * 
-	 * @param imageUri
-	 */
-	private Bitmap getSrcImage(Uri imageUri) {
-		try {
-			BitmapFactory.Options ops = new BitmapFactory.Options();
-			ops.inJustDecodeBounds = true;
-			Bitmap bmp = BitmapFactory.decodeStream(this.getContentResolver()
-					.openInputStream(imageUri), null, ops);
-			int wRatio = (int) Math.ceil(ops.outWidth / (float) MAX_WIDTH);
-			int hRatio = (int) Math.ceil(ops.outHeight / (float) MAX_HEIGHT);
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(ImgeditActivity.this, WelcomeActivity.class));
 
-			if (wRatio > 1 && hRatio > 1) {
-				if (wRatio > hRatio) {
-					ops.inSampleSize = wRatio;
-				} else {
-					ops.inSampleSize = hRatio;
-				}
-			}
+            }
+        });
+    }
 
-			ops.inJustDecodeBounds = false;
-			bmp = BitmapFactory.decodeStream(this.getContentResolver()
-					.openInputStream(imageUri), null, ops);
+    /**
+     * 需要加载的图片可能是大图，我们需要对其进行合适的缩小处理
+     * 
+     * @param imageUri
+     */
+    private Bitmap getSrcImage(Uri imageUri) {
+        try {
+            BitmapFactory.Options ops = new BitmapFactory.Options();
+            ops.inJustDecodeBounds = true;
+            Bitmap bmp = BitmapFactory.decodeStream(this.getContentResolver().openInputStream(imageUri), null, ops);
+            int wRatio = (int) Math.ceil(ops.outWidth / (float) MAX_WIDTH);
+            int hRatio = (int) Math.ceil(ops.outHeight / (float) MAX_HEIGHT);
 
-			return bmp;
+            if (wRatio > 1 && hRatio > 1) {
+                if (wRatio > hRatio) {
+                    ops.inSampleSize = wRatio;
+                } else {
+                    ops.inSampleSize = hRatio;
+                }
+            }
 
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			Log.e(this.getClass().getName(), e.getMessage());
-		}
+            ops.inJustDecodeBounds = false;
+            bmp = BitmapFactory.decodeStream(this.getContentResolver().openInputStream(imageUri), null, ops);
 
-		return null;
-	}
+            return bmp;
+
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Log.e(this.getClass().getName(), e.getMessage());
+        }
+
+        return null;
+    }
 
 }
